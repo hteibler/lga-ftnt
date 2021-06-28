@@ -2,10 +2,10 @@
   only usable for special use cases
 
 ## get files:
-  addresses ,services and policies via copy paste from UI
-  policies also download fwrule7 file!
+    addresses ,services and policies via copy paste from UI
+    policies also download fwrule7 file!
 
-  remove headers from files !!!
+    remove headers from files !!!
 
 ## tasks on FMG
     create policy folder and package
@@ -17,17 +17,17 @@
     create schedule       : "tbd"
 
 ## pre run
-  set environ variables
+    set environ variables
 
-  *export fgmuser=<<admin>>
-  *export fgmpass=<<password>>
+    *export fgmuser= -admin-*
+    *export fgmpass= -password-*
 
 
 ## after run:
-  Check errors and comments!
+    Check errors and comments!
 
-  policy  :
-    schedule : check all with "tbd"
+    policy  :
+      schedule : check all with "tbd"
 
 ## finally
-  finish "Internet"	= ALL , NOT 10.0.0.0/8 , NOT 172.16.0.0/12 , NOT 192.168.0.0/16
+    finish "Internet"	= ALL , NOT 10.0.0.0/8 , NOT 172.16.0.0/12 , NOT 192.168.0.0/16
