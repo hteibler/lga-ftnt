@@ -1,15 +1,14 @@
 # Barracuda - Fortinet Converter Script
 
-## on FMG
-  create policy folder and package
-  then --> change in code
-
-
 ## get files:
   addresses ,services and policies via copy paste from UI
   policies also download fwrule7 file!
 
   remove headers from files !!!
+
+## tasks on FMG
+    create policy folder and package
+    then --> change in code
 
 ## pre run
   set environ variables
