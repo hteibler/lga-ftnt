@@ -28,7 +28,7 @@ sid = ""
 # change this !!  --------------------------------------------------
 url = "https://192.168.0.231/jsonrpc"
 adom = "lga5"
-package="test1/glo1"
+package="test1/glo3"
 addresses = "network_objects_global.txt"
 services ="services_global.txt"
 
@@ -330,13 +330,13 @@ def log_result(r,name,l,override_green=G):
         status = d["status"]
         #print("status =", d["status"])
         if status["code"] in [0,-2]:
-            pr=(f'-- ok:{status["message"]} :{name}')
             return_ok +=1
             try:
                 id = d["data"]["policyid"]
             except:
                 pass
             color=override_green
+            pr=(f'-- ok:id {id} | {status["message"]} :{name}')
 
         elif status["code"] == -9998:
             pr=(name+" - "+json.dumps(status))
@@ -693,16 +693,28 @@ def parse_rules(rule_file,rule_file7):
         bothways,x=find_value(rule7,value_name,r)
 
         r=add_pol(data,package)
+
+        #set Section,  new section belogs to last policy, so
+        if old_section != section:
+            policy_id=0
+            try:
+                d = r["result"][0]
+                policy_id=d["data"]["policyid"]
+            except:
+                pass
+            if policy_id==0:
+                log(f"Set new Section error: {section} ",R)
+            else:
+                sec_data={}
+                sec_data["name"]=section
+                sec_data["attr"]="global-label"
+                rs=set_section(sec_data,package,policy_id)
+                log("New Section: "+section,B)
+                old_section = section
+
         policy_id=log_result(r,data["name"],l,override_green=override)
 
-        #set Section
-        if old_section != section:
-            sec_data={}
-            sec_data["name"]=section
-            sec_data["attr"]="global-label"
-            rs=set_section(sec_data,package,policy_id)
-            log("New Section: "+section,B)
-            old_section = section
+
         if bothways == "1":
             src=data["srcaddr"]
             data["srcaddr"]=data["dstaddr"]
@@ -714,9 +726,9 @@ def parse_rules(rule_file,rule_file7):
             r=add_pol(data,package)
             log_result(r,data["name"],l,override_green=override)
 
-    log(80*"-",B)
-    log("OK: "+str(return_ok),B)
-    log("failed: "+str(return_false),B)
+    log(80*"-",R)
+    log("OK: "+str(return_ok),R)
+    log("failed: "+str(return_false),R)
 
 #----------------------------------------------------------------------------
 #main
