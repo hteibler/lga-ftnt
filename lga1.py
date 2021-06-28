@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 #
 #(C)'2021 by Herby
-# V 1.0
-# 2021-06-11
+# V 1.1
+# 2021-06-29
 #
 import requests
 import time
+from datetime import datetime
 import json
 import sys
 import urllib3
@@ -21,25 +22,22 @@ import random
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#global variables: change
-url = "https://192.168.0.231/jsonrpc"
 headers = {"'Content-Type": "application/json"}
 sid = ""
-adom = "lga1"
 
-log_prefix = "log/run_"
-
+# change this !!  --------------------------------------------------
+url = "https://192.168.0.231/jsonrpc"
+adom = "lga5"
 package="test1/glo1"
+addresses = "network_objects_global.txt"
+services ="services_global.txt"
 
+new_objects_text="added via converter-script:"
 new_addr_obj_prefix = "IP__"
 new_addr_obj_prefix_pol = "IP_P_"
 new_service_obj_prefix = "S__"
-
-#addresses = "my_addr_obj.txt" #"no.txt"
-addresses = "no.txt"
-
-services ="services_global.txt"
-#services ="ss.txt"
+log_prefix = "log/run_"
+# change end   ----------------------------------------------------
 
 return_ok=0
 return_false=0
@@ -63,6 +61,11 @@ p.big {
 </style>
 </head>
 <body>
+"""
+
+html_footer="""</body>
+
+</html>
 """
 
 def is_valid_ipv4(ip):
@@ -179,7 +182,7 @@ def api_call(data):
     s=json.loads(rep.text)
     return s
 
-def get_session_token():
+def get_session_token():  # and open log files
     global textlog,htmllog
     username = os.environ['fmguser']
     password = os.environ['fmgpass']
@@ -199,11 +202,16 @@ def get_session_token():
         print ("got no session ID")
         sys.exit(1)
 
-def fmg_logout():
+def fmg_logout():  # and close log files
     data = {"id": 1, "method": "exec", "params": [ { "url": "/sys/logout" } ],
         "session": sid}
     r = api_call( data )
+
+    now=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log(f"-- script finished at {now} ",R)
+
     textlog.close()
+    htmllog.write(html_footer+"\n")
     htmllog.close()
 
 def make_addr(entry,data):
@@ -306,15 +314,6 @@ def test_get():
     s=json.dumps(d)
     print (s)
     print(100*".")
-    sys.exit(0)
-
-def add_obj(newdata,dataurl,method="add"):
-    data = {"method": method, "params": [{
-         "data":newdata,
-         "url":dataurl }],
-         "session": sid}
-    r = api_call( data )
-    return r
 
 def log_result(r,name,l,override_green=G):
     global return_ok
@@ -351,6 +350,14 @@ def log_result(r,name,l,override_green=G):
     log(f'{l} | {pr}',color)
     return id
 
+def add_obj(newdata,dataurl,method="add"):
+    data = {"method": method, "params": [{
+         "data":newdata,
+         "url":dataurl }],
+         "session": sid}
+    r = api_call( data )
+    return r
+
 def add_service(newdata):
     suburl="obj/firewall/service/custom"
     dataurl = f'/pm/config/adom/{adom}/{suburl}'
@@ -382,11 +389,6 @@ def set_section(newdata,package,policy_id):
     suburl="firewall/policy"
     dataurl = f'/pm/config/adom/{adom}/pkg/{package}/{suburl}/{policy_id}/section value'
     return add_obj(newdata,dataurl,method="set")
-
-def remove_xss(str):
-    str=str.replace("(","")
-    str=str.replace(")","")
-    return str
 
 def parse_addr(runs):
     if runs == 1:
@@ -443,7 +445,7 @@ def parse_addr(runs):
             else:  # new object and add to member
                 data={}
                 data["name"]=new_addr_obj_prefix+entry_item.strip()
-                data["comment"]="added from Herby's converter-script :)"
+                data["comment"]=new_objects_text
                 ok,data=make_addr(entry_item,data)
                 r=add_addr(data)
                 log_result(r,data["name"],l)
@@ -530,7 +532,7 @@ def parse_service(group):
                 else:  # new object and add to member
                     data={}
                     data["name"]=new_service_obj_prefix+entry_item.strip()
-                    data["comment"]="added from Herby's converter-script :)"
+                    data["comment"]=new_objects_text
                     ok,data=make_service(entry_item,data)
                     r=add_service(data)
                     log_result(r,data["name"],l)
@@ -562,18 +564,6 @@ def find_value(rule7,value_name,start):
             break
         j+=1
     return value,j
-
-def rem_ref(str):  # remove Ref: and rest
-    newlist=[]
-    if str[:3] in ["ALL","Any"]:
-        newlist=["ALL"]
-        return newlist
-    for substr in str.split(","):
-        substr=substr.lstrip()
-        if substr[:4] == "Ref:":
-            l=substr[5:].find(" ")+5
-            newlist.append(substr[5:l])
-    return newlist
 
 def get_list(rule7,rule_name,type):  # type :src  :dst  :srv
     start=find_rule(rule7,rule_name+":"+type)
@@ -610,7 +600,7 @@ def get_list(rule7,rule_name,type):  # type :src  :dst  :srv
             # create object
             data={}
             data["name"]=new_addr_obj_prefix_pol+addr
-            data["comment"]="added from Herby's converter-script IP from policy :)"
+            data["comment"]=new_objects_text+" IP from policy :)"
             ok,data=make_addr(addr,data)
             r=add_addr(data)
             log_result(r,data["name"],-1)
@@ -621,7 +611,7 @@ def get_list(rule7,rule_name,type):  # type :src  :dst  :srv
     #print(items)
     return items
 
-def short_name(name,comment):
+def short_name(name,comment):  # short name to <35 and write org-name to comment
     if len(name)>32:
         rnd=random.randrange(100,999)
         comment=f'{comment}#org-name:{name}#'
@@ -728,6 +718,7 @@ def parse_rules(rule_file,rule_file7):
     log("OK: "+str(return_ok),B)
     log("failed: "+str(return_false),B)
 
+#----------------------------------------------------------------------------
 #main
 
 user=getpass.getuser()
@@ -737,7 +728,7 @@ if arg == []:
     print("what do you want to do:")
     print("-------------------------------")
     print("1: copy addess objects, first run")
-    print("2: copy addess objects, left from first run")
+    print("2: copy addess objects, left from first run ")
     print("3: copy services - without groups")
     print("4: copy service-groups")
     print("5: copy policy packages")
@@ -749,7 +740,8 @@ if arg == []:
 # get token
 sid = get_session_token()
 cmd = ' '.join(sys.argv[0:])
-log(f"-- script run from {user} with cmd: {cmd}",R)
+now=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+log(f"-- script run from {user} at {now} with cmd: {cmd}",R)
 arg = sys.argv[1]
 
 if arg == "1":
@@ -757,7 +749,6 @@ if arg == "1":
 
 if arg == "2":
     parse_addr(2)
-
 
 if arg == "3":
     parse_service(group=False)

@@ -1,29 +1,35 @@
-on FMG
-  create policy folder package
+# Barracuda - Fortinet Converter Script
+
+## on FMG
+  create policy folder and package
+  then --> change in code
 
 
+## get files:
+  addresses ,services and policies via copy paste from UI
+  policies also download fwrule7 file!
 
-get files:
-  addresses ,services and policies via copy paste
-  policies also fwrule7 file!
+  remove headers from files !!!
 
-  remove headers from file !!!
+## pre run
+  set environ variables
 
-pre run
-
-export fgmuser=<admin>
-export fgmpass=<password>
+  *export fgmuser=<admin>*
+  *export fgmpass=<password>*
 
 
-Internet	4 internal,  2 external	Ref: World , NOT 10.0.0.0/8 , NOT 172.16.0.0/12 , NOT 192.168.0.0/16	16oct2007/wrzul
-
-  create address-group  : "Internet" IP__NOT 10.0.0.0/8 ,  IP__NOT 172.16.0.0/12 , IP__NOT 192.168.0.0/16
+  create address-group  : "Internet" first only with "all"
+      not sure if we need them anymore: IP__NOT 10.0.0.0/8 ,  IP__NOT 172.16.0.0/12 , IP__NOT 192.168.0.0/16
   create addr obj       : "PascomServer"  ( Any , ALL )
   create schedule       : "tbd"
   create service        :
 
 
-after run:
+## after run:
+  Check errors and comments!
 
-policy  :
-  schedule : check all with "tbd"
+  policy  :
+    schedule : check all with "tbd"
+
+## finally
+  finish "Internet"	= ALL , NOT 10.0.0.0/8 , NOT 172.16.0.0/12 , NOT 192.168.0.0/16
