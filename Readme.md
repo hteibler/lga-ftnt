@@ -3,7 +3,7 @@
 
 ## get files:
     addresses ,services and policies via copy paste from UI
-    policies also download fwrule7 file!
+    policies: add comment as column 1 and download also "*.fwrule7" file!
 
     remove headers from files !!!
 
@@ -26,8 +26,14 @@
 ## after run:
     Check errors and comments!
 
-    policy  :
-      schedule : check all with "tbd"
+    addresses:
+      finish "Internet"	= ALL , NOT 10.0.0.0/8 , NOT 172.16.0.0/12 , NOT 192.168.0.0/16
 
-## finally
-    finish "Internet"	= ALL , NOT 10.0.0.0/8 , NOT 172.16.0.0/12 , NOT 192.168.0.0/16
+    services:
+      see comment : " <<check !! "
+      see red Icons
+
+    policy  :
+      see schedule : check all with "tbd"
+      see comments : starting with ">>"
+      see rules ending _bw : check if necessary
