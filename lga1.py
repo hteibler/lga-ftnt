@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #
 #(C)'2021 by Herby
-# V 1.1
+# V 1.2
 # 2021-06-29
 #
 import requests
