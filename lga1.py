@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 #
 #(C)'2021 by Herby
-# V 1.2
-# 2021-06-29
+# V 1.3
+# 2021-11-08
 #
 import requests
 import time
@@ -26,17 +26,34 @@ headers = {"'Content-Type": "application/json"}
 sid = ""
 
 # change this !!  --------------------------------------------------
-url = "https://192.168.0.231/jsonrpc"
-adom = "lga5"
+url = "https://192.168.0.232/jsonrpc"
+adom = "lga6"
 package="test1/glo3"
 addresses = "network_objects_global.txt"
 services ="services_global.txt"
+rule_file = "importRuleset/GlobalRules.txt"
+rule_file7 ="importRuleset/GlobalRules.fwrule7"
 
 new_objects_text="added via converter-script:"
 new_addr_obj_prefix = "IP__"
 new_addr_obj_prefix_pol = "IP_P_"
 new_service_obj_prefix = "S__"
 log_prefix = "log/run_"
+
+# translation table for shapers
+# names are your choice, and can be changed afterwards
+# the target "Shared Shaper" must exist in "Object Configurations / Traffic Shapers"
+# word "no-shaper" is hard-coded , means no shaper is added to policy !
+shapers = \
+{"No-Shaping" : "no-shaper",
+"N.A." : "no-shaper",
+"Fwd: No-Shaping Rev: No-Shaping" : "no-shaper",
+"TOS1Prc0-STANDARD (ID 100)" : "shaper1",
+"TOS64Prc2-KRITISCH (ID 102)" : "shaper2",
+"TOS96Prc3-MONITORING (ID 103)" : "shaper3",
+"TOS96-Prc3-VIDEO (ID 104)" : "shaper4",
+"TOS160Prc5-PRIORITY (ID 105)" : "shaper5",
+"TOS1Prc0-Backup-RZ (ID 106)" : "shaper6"}
 # change end   ----------------------------------------------------
 
 return_ok=0
@@ -46,6 +63,7 @@ G="G"
 R="R"
 B="B"
 M="M"
+
 
 html_header="""<!DOCTYPE html>
 <html>
@@ -658,6 +676,16 @@ def parse_rules(rule_file,rule_file7):
 
         #data["section value"]=section
 
+        #check QoS: ht 2021-11-08
+        try:
+            QoS=shapers[line_elements[13].strip()]
+        except:
+            log(f"Error Shaper not found, line: {line_elements[0]} ",R)
+            pass
+        if QoS != "no-shaper" : data["traffic-shaper"]=QoS
+        #check QoS: ht 2021-11-08
+
+
         data["schedule"]=['always']
         if  line_elements[12].strip() != "Always":
             data["schedule"]=['tbd']
@@ -769,9 +797,6 @@ if arg == "4":
     parse_service(group=True)
 
 if arg == "5":
-    rule_file = "global_rules.txt"
-    rule_file7 ="_global.fwrule7"
-
     parse_rules(rule_file,rule_file7)
 
 if arg == "t":

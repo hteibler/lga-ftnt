@@ -16,11 +16,15 @@
     create addr obj       : "PascomServer"  ( Any , ALL )
     create schedule       : "tbd"
 
+    create shaper : see inline in code line 43 to 57
+
 ## pre run
     set environ variables
 
-    *export fgmuser= -admin-*
-    *export fgmpass= -password-*
+    edit global variables in code : see line 28 -40
+
+    *export fmguser= -admin-*
+    *export fmgpass= -password-*
 
 
 ## after run:
