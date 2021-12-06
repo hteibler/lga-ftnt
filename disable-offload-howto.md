@@ -11,6 +11,10 @@ export fmguser= -admin-
 export fmgpass= -password-
 ```
 
+to simulate a run ( makes no changes! ),
+edit global parameter ```
+ sim = "no"```
+
 ## install backend service
 
 ### use script "lga_srv.py"
